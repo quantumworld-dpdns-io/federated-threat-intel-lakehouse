@@ -1,0 +1,42 @@
+name: Scheduled Security Scans
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+    - cron: "0 3 * * 1"
+    - cron: "0 4 1 * *"
+
+jobs:
+  nightly-dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit safety
+      - run: pip-audit
+      - run: safety check
+
+  weekly-full-scan:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * 1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH,MEDIUM
+
+  monthly-pqc-assessment:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 4 1 * *'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[quantum]"
+      - name: PQC Readiness Assessment
+        run: python -c "from src.quantum.pqc.migration import PQCMigrationToolkit; t = PQCMigrationToolkit(); print(t.assess_risk(t.scan_crypto_inventory('.')))"
