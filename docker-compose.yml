@@ -1,0 +1,70 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=dragonfly
+      - TRINO_HOST=trino
+      - CHROMA_HOST=chroma
+    depends_on:
+      - dragonfly
+      - minio
+    volumes:
+      - ./src:/app/src
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonfly-data:/data
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+
+  trino:
+    image: trinodb/trino:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/trino:/etc/trino/catalog
+
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8500:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"
+    volumes:
+      - phoenix-data:/phoenix/data
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  dragonfly-data:
+  minio-data:
+  chroma-data:
+  phoenix-data:
+  ollama-data:
