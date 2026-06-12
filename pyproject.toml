@@ -1,0 +1,160 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "federated-threat-intel-lakehouse"
+version = "0.1.0"
+description = "Federated threat intelligence lakehouse for SMEs – privacy-preserving CTI contribution using federated learning and Apache Iceberg/Trino"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [
+    { name = "quantumworld-dpdns-io" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "httpx>=0.28.0",
+    "pyiceberg>=0.9.0",
+    "pyarrow>=18.0.0",
+    "duckdb>=1.2.0",
+    "trino[sqlalchemy]>=0.331.0",
+    "polars>=1.20.0",
+    "redis[hiredis]>=5.2.0",
+    "chromadb>=0.6.0",
+    "pymilvus>=2.5.0",
+    "weaviate-client>=4.10.0",
+    "qdrant-client>=1.12.0",
+    "flwr>=1.15.0",
+    "torch>=2.5.0",
+    "qiskit>=1.3.0",
+    "qiskit-aer>=0.16.0",
+    "liboqs-python>=0.12.0",
+    "opentelemetry-api>=1.29.0",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp>=1.29.0",
+    "wasmtime>=29.0.0",
+    "PyJWT>=2.10.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.18",
+    "orjson>=3.10.0",
+    "structlog>=24.4.0",
+    "apscheduler>=3.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.14.0",
+    "pre-commit>=4.0.0",
+]
+test = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.5.0",
+    "robotframework>=7.1.0",
+    "robotframework-requests>=7.1.0",
+    "robotframework-databaselibrary>=2.0.0",
+    "robotframework-sshlibrary>=3.8.0",
+    "robotframework-assertion-engine>=0.11.0",
+    "ZAPv2>=2.16.0",
+    "httpx>=0.28.0",
+    "factory-boy>=3.3.0",
+    "faker>=33.0.0",
+]
+quantum = [
+    "qiskit>=1.3.0",
+    "qiskit-aer>=0.16.0",
+    "qiskit-ibm-runtime>=0.34.0",
+    "cudaq>=0.9.0; platform_system=='Linux'",
+    "liboqs-python>=0.12.0",
+    "noir-lang>=0.40.0",
+    "risc0>=1.2.0",
+]
+fl = [
+    "flwr>=1.15.0",
+    "flwr-datasets>=0.12.0",
+    "torch>=2.5.0",
+    "torchvision>=0.20.0",
+    "opacus>=1.7.0",
+    "nvflare>=2.5.0",
+]
+security = [
+    "robotframework>=7.1.0",
+    "robotframework-requests>=7.1.0",
+    "ZAPv2>=2.16.0",
+    "bandit>=1.8.0",
+    "safety>=3.2.0",
+    "pip-audit>=2.7.0",
+]
+llm = [
+    "openai>=1.60.0",
+    "anthropic>=0.42.0",
+    "ollama>=0.4.0",
+    "llama-cpp-python>=0.3.0",
+    "cohere>=5.13.0",
+]
+all = [
+    "federated-threat-intel-lakehouse[dev,test,quantum,fl,security,llm]",
+]
+
+[project.scripts]
+ftil = "src.cli:main"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "SIM", "TCH", "RUF"]
+ignore = ["S101", "S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = ["flwr.*", "nvflare.*", "qiskit.*", "cudaq.*", "liboqs.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "security: Security tests",
+    "quantum: Quantum computing tests",
+    "fl: Federated learning tests",
+    "e2e: End-to-end tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "frontend/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
